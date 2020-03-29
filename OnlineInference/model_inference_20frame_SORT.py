@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Mon Nov 18 09:51:16 2019
@@ -24,6 +25,7 @@ from src.fun_plotfunction import  plot_ROI, plot_bbox_Violation, plot_bbox
 from src.fun_modify_seg import fun_intergate_seg_LaneandRoad
 from src.violation import save_violation, createFolder
 from IPython.display import clear_output
+from charnet.config import cfg
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -33,8 +35,8 @@ filepath_model_seg_LaneLine = './models/model_148_lane_512_256_p2_q3_1206.pth'
 filepath_model_seg_road = './models/model_147_road_512_256_p2_q3_1206.pth'
 # Load Object Detection model
 checkpoint_path = './models/od_NoPretrain/BEST_checkpoint.pth.tar'
-video_path='./mnt/OV_001-Part1_OV_001_0001.avi'
-savefilename='OV_001-Part1_OV_001_0001'
+video_path='./mnt/(Front)IPCamera_20200305095701_p000 (1).avi'
+savefilename='(Front)IPCamera_20200305095701_p000 (1).avi'
 
 video_t_start = 0 # unit: second
 video_t_end = 60 # unit: second
@@ -216,7 +218,7 @@ for c_time, tmp_time in enumerate(partial_inference_video):
                 
                 for x1, y1, x2, y2, obj_id , cls_pred in tracked_objects:
                     cls = vehicle[int(cls_pred)]
-                    img_result = cv2.UMat(img_result)
+                    #img_result = cv2.UMat(img_result)
                     cv2.putText(img_result, cls + ":" + str(int(obj_id)),(int(x1+30), int(y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 1, (225,225,0), 3)
 
             ############################ SORT ######################################
@@ -233,8 +235,12 @@ for c_time, tmp_time in enumerate(partial_inference_video):
                         break
 
             # 存取違規的frame前後區間
+            ## 載入偵測車牌charnet的cfg並傳送至save_violation
+            cfg.merge_from_file("./configs/icdar2015_hourglass88.yaml")
+            cfg.freeze()
+            ##
             frame_num = 20
-            violation_frame,img_stack = save_violation(violation_frame,img_stack,img_result,frame_num)
+            violation_frame,img_stack = save_violation(cfg,violation_frame,img_stack,img_result,frame_num)
         
             
             videoWriter.write(img_result)
@@ -248,9 +254,3 @@ for c_time, tmp_time in enumerate(partial_inference_video):
 
     videoWriter.release()
 cv2.destroyAllWindows()
-
-
-
-
-
-
